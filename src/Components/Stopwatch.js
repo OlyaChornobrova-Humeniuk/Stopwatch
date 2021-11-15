@@ -1,61 +1,79 @@
 import React, { useEffect, useState } from "react";
+import { timer } from "rxjs";
+import Time from "./Time/Time";
+import { first } from "rxjs/operators";
 
-
-const Stopwatch =()=>{
+const Stopwatch = () => {
+    const intervalRX = timer(1000);
     const [hour, setHour] = useState(0);
-    const [min, setMin] = useState(0);
+    const [minute, setMinute] = useState(0);
     const [second, setSecond] = useState(0);
-    const [stop, setStop] = useState(true);
-    
-    const onStart = () => {
-        setStop(false);
-        // setSecond(second + 1);
-    }
-    const onStop = () => {
-        setStop(true);
-    }
-    const onReset = () => {
-        setHour(0);
-        setMin(0);
-        setSecond(0);
-    }
+    const [stop, setStop] = useState(false);
 
     useEffect(() => {
         let interval = null;
-        if(!stop) {
-            interval = setInterval(() => {
-                if(min > 59) {
-                    setHour(hour+1);
-                    setMin(0);
-                    clearInterval(interval);
-                }
-                if(second > 59) {
-                    setMin(min+1);
+        let sec = second;
+        let min = minute;
+        let hh = hour;
+        interval = intervalRX.subscribe(() => {
+            if (stop) {
+                sec++;
+                setSecond(sec);
+                if (second >= 59) {
                     setSecond(0);
-                    clearInterval(interval);
+                    min++;
+                    setMinute(min);
+                    if (minute >= 59) {
+                        setMinute(0);
+                        hh++;
+                        setHour(hh);
+                    }
                 }
-                if (second <= 59) {
-                    setSecond(second+1);
-                }
-            }, 999)
+            }
+        });
+        return () => interval.unsubscribe();
+    }, [stop, second, minute, hour, intervalRX]);
+
+    const hClick = (button) => {
+        const stopp = stop;
+        if (button === "Start") {
+            setStop(!stopp);
+        } else if (button === "Stop") {
+            setSecond(0);
+            setMinute(0);
+            setHour(0);
+            setStop(!stopp);
         }
-        else {
-            clearInterval(interval);
-        }
-        return () => {
-            clearInterval(interval)
-        }
-    })
-    return(
-        <div>
-            <span>Stopwatch</span>
-            <h1>{hour} : {min} : {second}</h1>
-            <button onClick={onStart}>Start</button>
-            <button onClick={onStop}>Stop</button>
-            <button onClick={onReset}>Reset</button>
+    };
+    const hReset = () => {
+        setSecond(0);
+        setMinute(0);
+        setHour(0);
+        setStop(true);
+    };
+    const hDoubleClick = () => {
+        const dbTimer = timer(300)
+        dbTimer.pipe(first()).subscribe(()=> {
+            setStop(false);
+        })
+    };
+
+    return (
+
+        <div className="Stopwatch">
+            <div className="Time">
+                <Time hour={hour} minute={minute} second={second} />
+            </div>
+            <div className="control-buttons">
+                <button onClick={
+                    stop ? () => hClick("Stop") : () => hClick("Start")
+                } >
+                    {stop ? "Stop" : "Start"} </button>
+                <button onDoubleClick={hDoubleClick}>Wait</button>
+                <button onClick={hReset}>Reset</button>
+            </div>
         </div>
-        
-    )
-}
+    );
+};
 
 export default Stopwatch;
