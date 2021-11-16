@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { timer } from "rxjs";
 import Time from "./Time/Time";
-import { first } from "rxjs/operators";
+
 
 const Stopwatch = () => {
     const intervalRX = timer(1000);
@@ -51,11 +51,8 @@ const Stopwatch = () => {
         setHour(0);
         setStop(true);
     };
-    const hDoubleClick = () => {
-        const dbTimer = timer(300)
-        dbTimer.pipe(first()).subscribe(()=> {
+    const hWait = () => {
             setStop(false);
-        })
     };
 
     return (
@@ -69,7 +66,7 @@ const Stopwatch = () => {
                     stop ? () => hClick("Stop") : () => hClick("Start")
                 } >
                     {stop ? "Stop" : "Start"} </button>
-                <button onDoubleClick={hDoubleClick}>Wait</button>
+                <button onClick={hWait}>Wait</button>
                 <button onClick={hReset}>Reset</button>
             </div>
         </div>
