@@ -9,6 +9,7 @@ const Stopwatch = () => {
     const [minute, setMinute] = useState(0);
     const [second, setSecond] = useState(0);
     const [stop, setStop] = useState(false);
+    const doubleClickTimer = 0;
 
     useEffect(() => {
         let interval = null;
@@ -51,8 +52,19 @@ const Stopwatch = () => {
         setHour(0);
         setStop(true);
     };
-    const hWait = () => {
+    const hImitateDoubleClick = () => {
+        const curTime = Date.now();
+        if (doubleClickTimer > 0) {  //not first click
+            const timeDiff = curTime - doubleClickTimer;
+            if (timeDiff > 300) {
+                doubleClickTimer = 0;
+                return false;
+            }
             setStop(false);
+            doubleClickTimer = 0;
+        }
+
+        doubleClickTimer = curTime; // first
     };
 
     return (
@@ -66,7 +78,7 @@ const Stopwatch = () => {
                     stop ? () => hClick("Stop") : () => hClick("Start")
                 } >
                     {stop ? "Stop" : "Start"} </button>
-                <button onClick={hWait}>Wait</button>
+                <button onClick={hImitateDoubleClick}>Wait</button>
                 <button onClick={hReset}>Reset</button>
             </div>
         </div>
